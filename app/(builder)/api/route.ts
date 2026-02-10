@@ -11,55 +11,13 @@ import {
 } from "@chaibuilder/next/actions/supabase";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { triggerPageGeneration } from "./lib/trigger-page-generation";
 
 registerPageTypes();
 
 const supabase = getSupabaseAdmin();
 ChaiActionsRegistry.registerActions(SupabaseAuthActions(supabase));
 ChaiActionsRegistry.registerActions(SupabaseStorageActions(supabase));
-
-/**
- * Triggers GET requests to force Next.js to regenerate static pages
- * @param slugs - Array of page slugs to trigger
- * @param baseUrl - Base URL of the application
- */
-async function triggerPageGeneration(slugs: string[], baseUrl: string) {
-  const validSlugs = slugs.filter((slug) => {
-    // Filter out empty, THEME, or invalid slugs
-    if (!slug || slug.trim() === "" || slug === "THEME") {
-      return false;
-    }
-    return true;
-  });
-
-  if (validSlugs.length === 0) {
-    return;
-  }
-
-  // Trigger GET requests in parallel but don't await them to avoid blocking
-  const requests = validSlugs.map(async (slug) => {
-    try {
-      const url = `${baseUrl}${slug}`;
-      console.log(`[Publish] Triggering page generation for: ${url}`);
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "User-Agent": "ChaiBuilder-Publish",
-        },
-      });
-      if (!response.ok) {
-        console.warn(`[Publish] Failed to generate ${url}: ${response.status}`);
-      }
-    } catch (error) {
-      console.error(`[Publish] Error triggering generation for ${slug}:`, error);
-    }
-  });
-
-  // Fire and forget - don't block the response
-  Promise.all(requests).catch((error) => {
-    console.error("[Publish] Error in page generation batch:", error);
-  });
-}
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.CHAIBUILDER_APP_KEY;
@@ -104,7 +62,7 @@ export async function POST(req: NextRequest) {
       // Trigger GET requests to force page generation after tag revalidation
       // Tags may contain slugs, so we filter and use them
       const baseUrl = req.nextUrl.origin;
-      triggerPageGeneration(response.tags, baseUrl);
+      triggerPageGeneration(response.tags, baseUrl, "Publish");
     }
 
     // Handle streaming responses

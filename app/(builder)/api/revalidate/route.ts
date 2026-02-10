@@ -1,48 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-
-/**
- * Triggers GET requests to force Next.js to regenerate static pages
- * @param slugs - Array of page slugs to trigger
- * @param baseUrl - Base URL of the application
- */
-async function triggerPageGeneration(slugs: string[], baseUrl: string) {
-  const validSlugs = slugs.filter((slug) => {
-    // Filter out empty, THEME, or invalid slugs
-    if (!slug || slug.trim() === "" || slug === "THEME") {
-      return false;
-    }
-    return true;
-  });
-
-  if (validSlugs.length === 0) {
-    return;
-  }
-
-  // Trigger GET requests in parallel but don't await them to avoid blocking
-  const requests = validSlugs.map(async (slug) => {
-    try {
-      const url = `${baseUrl}${slug}`;
-      console.log(`[Revalidate] Triggering page generation for: ${url}`);
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "User-Agent": "ChaiBuilder-Revalidation",
-        },
-      });
-      if (!response.ok) {
-        console.warn(`[Revalidate] Failed to generate ${url}: ${response.status}`);
-      }
-    } catch (error) {
-      console.error(`[Revalidate] Error triggering generation for ${slug}:`, error);
-    }
-  });
-
-  // Fire and forget - don't block the response
-  Promise.all(requests).catch((error) => {
-    console.error("[Revalidate] Error in page generation batch:", error);
-  });
-}
+import { triggerPageGeneration } from "../lib/trigger-page-generation";
 
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-webhook-secret");
@@ -64,7 +22,7 @@ export async function POST(req: NextRequest) {
 
     // Trigger GET requests to force page generation after cache invalidation
     const baseUrl = req.nextUrl.origin;
-    triggerPageGeneration(pathsArray, baseUrl);
+    triggerPageGeneration(pathsArray, baseUrl, "Revalidate");
 
     if (redirect) {
       return NextResponse.redirect(req.nextUrl.origin + pathsArray[0]);
