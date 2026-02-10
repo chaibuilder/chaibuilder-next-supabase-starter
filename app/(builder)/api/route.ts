@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       });
 
       // Trigger GET requests to force page generation after tag revalidation
-      // Tags may contain slugs, so we filter and use them
+      // Note: In ChaiBuilder, tags often correspond to page slugs
       const baseUrl = req.nextUrl.origin;
       triggerPageGeneration(response.tags, baseUrl, "Publish");
     }

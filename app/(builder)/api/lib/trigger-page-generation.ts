@@ -9,13 +9,15 @@ export async function triggerPageGeneration(
   baseUrl: string,
   source: string = "Revalidate",
 ) {
-  const validSlugs = slugs.filter((slug) => {
-    // Filter out empty, THEME, or invalid slugs
-    if (!slug || slug.trim() === "" || slug === "THEME") {
-      return false;
-    }
-    return true;
-  });
+  const validSlugs = slugs
+    .filter((slug) => {
+      // Filter out empty, THEME, or invalid slugs
+      return slug && slug.trim() !== "" && slug !== "THEME";
+    })
+    .map((slug) => {
+      // Ensure slug starts with '/' for proper URL construction
+      return slug.startsWith("/") ? slug : `/${slug}`;
+    });
 
   if (validSlugs.length === 0) {
     return;
@@ -46,7 +48,6 @@ export async function triggerPageGeneration(
   });
 
   // Fire and forget - use allSettled to ensure all requests complete independently
-  Promise.allSettled(requests).catch((error) => {
-    console.error(`[${source}] Error in page generation batch:`, error);
-  });
+  // Note: allSettled never rejects, so no .catch() is needed
+  void Promise.allSettled(requests);
 }
