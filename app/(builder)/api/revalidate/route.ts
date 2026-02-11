@@ -1,5 +1,6 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { triggerPageGeneration } from "../lib/trigger-page-generation";
 
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-webhook-secret");
@@ -18,6 +19,10 @@ export async function POST(req: NextRequest) {
 
     const pathsArray = Array.isArray(paths) ? paths : paths.split(",");
     await Promise.all(pathsArray.map((path: string) => revalidatePath(path)));
+
+    // Trigger GET requests to force page generation after cache invalidation
+    const baseUrl = req.nextUrl.origin;
+    triggerPageGeneration(pathsArray, baseUrl, "Revalidate");
 
     if (redirect) {
       return NextResponse.redirect(req.nextUrl.origin + pathsArray[0]);

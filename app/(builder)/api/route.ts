@@ -11,6 +11,7 @@ import {
 } from "@chaibuilder/next/actions/supabase";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { triggerPageGeneration } from "./lib/trigger-page-generation";
 
 registerPageTypes();
 
@@ -57,6 +58,11 @@ export async function POST(req: NextRequest) {
       response.tags.forEach((tag: string) => {
         revalidateTag(tag, "max");
       });
+
+      // Trigger GET requests to force page generation after tag revalidation
+      // Note: In ChaiBuilder, tags often correspond to page slugs
+      const baseUrl = req.nextUrl.origin;
+      triggerPageGeneration(response.tags, baseUrl, "Publish");
     }
 
     // Handle streaming responses
