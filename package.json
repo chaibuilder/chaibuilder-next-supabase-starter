@@ -2,18 +2,21 @@
   "name": "chaibuilder-supabase-starter",
   "version": "0.1.4",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "concurrently \"npx chai-tailwind --config ./tailwind.config.js --watch\" \"next dev --port 3000\"",
-    "build": "npx chai-tailwind --config ./tailwind.config.js && next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "concurrently \"npx chai-tailwind --config ./tailwind.config.js --watch\" \"vinext dev --port 3000\"",
+    "build": "npx chai-tailwind --config ./tailwind.config.js && vinext build",
+    "start": "vinext start",
+    "lint": "eslint",
+    "dev:vinext": "vite dev --port 3001",
+    "build:vinext": "vite build"
   },
   "dependencies": {
-    "@chaibuilder/next": "^4.0.0-beta.43",
+    "@chaibuilder/next": "^4.0.0-beta.44",
     "@supabase/supabase-js": "^2.90.1",
     "next": "^16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/aspect-ratio": "^0.4.2",
@@ -23,12 +26,16 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-rsc": "^0.5.21",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.2",
     "postcss": "^8.4.49",
+    "react-server-dom-webpack": "^19.2.4",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vinext": "^0.0.18",
+    "vite": "^7.3.1"
   }
 }
