@@ -114,7 +114,6 @@ export default function Editor() {
       apiUrl="api"
       getPreviewUrl={getPreviewUrl}
       getLiveUrl={getLiveUrl}
-      websocket={supabase}
       onLogout={handleLogout}
     />
   );
